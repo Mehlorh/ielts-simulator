@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Speaking Simulator Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --background: #0f172a;
+            --text: #f8fafc;
+            --accent: #7c3aed;
+            --error: #dc2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-card {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .test-container {
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+        }
+
+        .feedback-section {
+            background: rgba(124, 58, 237, 0.1);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .score-meter {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        .score-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .question-list {
+            margin-bottom: 2rem;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .question-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .response-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 0.5rem;
+        }
+
+        .part-header {
+            color: #7c3aed;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .user-msg {
+            color: #7c3aed;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-left: 2px solid var(--primary);
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .error {
+            color: var(--error);
+            padding: 1rem;
+            border: 1px solid var(--error);
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1 }
+            50% { opacity: 0.5 }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>IELTS Speaking Simulator Pro</h1>
+            <p>Real-time practice with AI-powered assessment</p>
+        </div>
+
+        <div class="status-indicators">
+            <div class="status-card">
+                <h3>Fluency</h3>
+                <div class="score-meter">
+                    <div class="score-progress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="status-card">
+                <h3>Pronunciation</h3>
+                <div class="score-meter">
+                    <div class="score-progress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="status-card">
+                <h3>Vocabulary</h3>
+                <div class="score-meter">
+                    <div class="score-progress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-container" id="testContainer">
+            <!-- Test content will be loaded here -->
+        </div>
+
+        <div class="controls">
+            <button id="startTestBtn" onclick="startTest()">Start Test</button>
+            <button onclick="downloadReport()">Download Report</button>
+        </div>
+
+        <div class="feedback-section" id="feedbackSection">
+            <h2>Overall Feedback</h2>
+            <div id="liveFeedback"></div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_CLOUD_API_KEY = 'AIzaSyDnRslv52nYB0mZXgbuIq0S-qIFoim9vaA';
+        const OPENAI_API_KEY = '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';
+
+        const testStructure = {
+            1: {
+                title: "Part 1: Introduction",
+                instructions: "Answer 3-4 short questions about familiar topics",
+                questions: [
+                    "Where are you from?",
+                    "What do you do for work/study?",
+                    "Why are you preparing for IELTS?",
+                    "What's your favorite leisure activity?"
+                ],
+                duration: 60
+            },
+            2: {
+                title: "Part 2: Long Turn",
+                instructions: "Speak for 2 minutes on this topic:",
+                cueCards: [
+                    "Describe a memorable trip you took recently",
+                    "Talk about an important decision you made",
+                    "Describe a valuable object you own"
+                ],
+                duration: 120
+            },
+            3: {
+                title: "Part 3: Discussion",
+                instructions: "Discuss these abstract questions:",
+                questions: [],
+                duration: 180
+            }
+        };
+
+        let currentPart = 1;
+        let currentQuestionIndex = 0;
+        let mediaRecorder;
+        let audioChunks = [];
+        let conversationHistory = [];
+        let assessmentData = {};
+
+        function startTest() {
+            document.getElementById('startTestBtn').disabled = true;
+            renderTestStructure();
+        }
+
+        function renderTestStructure() {
+            const container = document.getElementById('testContainer');
+            container.innerHTML = `
+                <div class="part-header">
+                    <h3>${testStructure[currentPart].title}</h3>
+                    <p>${testStructure[currentPart].instructions}</p>
+                </div>
+                <div class="question-list" id="questionList"></div>
+            `;
+
+            const questionList = document.getElementById('questionList');
+            
+            if(currentPart === 1) {
+                testStructure[1].questions.forEach((question, index) => {
+                    questionList.innerHTML += `
+                        <div class="question-card" id="q1-${index}">
+                            <div class="question-header">
+                                <h4>Question ${index + 1}</h4>
+                                <div class="question-controls">
+                                    <button onclick="startRecording(${index})" id="recordBtn-${index}">Record</button>
+                                    <button onclick="stopRecording(${index})" id="stopBtn-${index}" disabled>Stop</button>
+                                </div>
+                            </div>
+                            <p>${question}</p>
+                            <div class="response-container" id="response-${index}"></div>
+                        </div>
+                    `;
+                });
+            }
+            else if(currentPart === 2) {
+                const cueCard = testStructure[2].cueCards[Math.floor(Math.random() * testStructure[2].cueCards.length)];
+                questionList.innerHTML = `
+                    <div class="question-card">
+                        <div class="question-header">
+                            <h4>Cue Card</h4>
+                            <div class="question-controls">
+                                <button onclick="startRecording(0)">Record</button>
+                                <button onclick="stopRecording(0)" disabled>Stop</button>
+                            </div>
+                        </div>
+                        <p>${cueCard}</p>
+                        <div class="response-container" id="response-0"></div>
+                    </div>
+                `;
+            }
+            else if(currentPart === 3) {
+                generateDiscussionQuestions();
+                testStructure[3].questions.forEach((question, index) => {
+                    questionList.innerHTML += `
+                        <div class="question-card" id="q3-${index}">
+                            <div class="question-header">
+                                <h4>Discussion Question ${index + 1}</h4>
+                                <div class="question-controls">
+                                    <button onclick="startRecording(${index})">Record</button>
+                                    <button onclick="stopRecording(${index})" disabled>Stop</button>
+                                </div>
+                            </div>
+                            <p>${question}</p>
+                            <div class="response-container" id="response-${index}"></div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        async function startRecording(index) {
+            try {
+                toggleControls(index, true);
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const transcript = await transcribeAudio(audioBlob);
+                    processResponse(index, transcript);
+                };
+
+                mediaRecorder.start();
+            } catch (err) {
+                showError('Microphone access denied');
+                toggleControls(index, false);
+            }
+        }
+
+        function stopRecording(index) {
+            if(mediaRecorder) {
+                mediaRecorder.stop();
+                toggleControls(index, false);
+            }
+        }
+
+        function toggleControls(index, isRecording) {
+            const recordBtn = document.querySelector(`#recordBtn-${index}`);
+            const stopBtn = document.querySelector(`#stopBtn-${index}`);
+            
+            if(recordBtn && stopBtn) {
+                recordBtn.disabled = isRecording;
+                stopBtn.disabled = !isRecording;
+            }
+        }
+
+        async function processResponse(index, transcript) {
+            const responseContainer = document.querySelector(`#response-${index}`);
+            responseContainer.innerHTML = `
+                <div class="user-msg">Your answer: ${transcript}</div>
+                <div class="loading">Analyzing response...</div>
+            `;
+
+            await analyzePerformance(transcript);
+            
+            responseContainer.innerHTML += `
+                <div class="feedback-item">
+                    <h4>Fluency: ${assessmentData.fluency.score}</h4>
+                    <p>${assessmentData.fluency.feedback}</p>
+                </div>
+                <div class="improved-text">Improved version: ${assessmentData.improved_version}</div>
+            `;
+
+            currentQuestionIndex++;
+            if(currentQuestionIndex >= testStructure[currentPart].questions.length) {
+                advanceToNextPart();
+            }
+        }
+
+        function advanceToNextPart() {
+            currentPart++;
+            currentQuestionIndex = 0;
+            if(currentPart <= 3) {
+                renderTestStructure();
+            } else {
+                endTest();
+            }
+        }
+
+        function generateDiscussionQuestions() {
+            testStructure[3].questions = [
+                "How has tourism changed in your country?",
+                "What makes a good tourist attraction?"
+            ];
+        }
+
+        async function transcribeAudio(audioBlob) {
+            try {
+                const audioBase64 = await blobToBase64(audioBlob);
+                const response = await fetch(
+                    `https://speech.googleapis.com/v1/speech:recognize?key=${GOOGLE_CLOUD_API_KEY}`,
+                    {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            config: {
+                                encoding: "WEBM_OPUS",
+                                sampleRateHertz: 48000,
+                                languageCode: "en-US",
+                                enableAutomaticPunctuation: true
+                            },
+                            audio: { content: audioBase64.split(',')[1] }
+                        })
+                    }
+                );
+                
+                const data = await response.json();
+                return data.results[0].alternatives[0].transcript;
+            } catch (error) {
+                showError('Transcription failed. Please try again.');
+            }
+        }
+
+        async function analyzePerformance(transcript) {
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [{
+                            role: "system",
+                            content: `Analyze this IELTS response: "${transcript}". Provide JSON:
+                            {
+                                "fluency": {"score": number, "feedback": string},
+                                "pronunciation": {"score": number, "feedback": string},
+                                "grammar": {"score": number, "feedback": string},
+                                "vocabulary": {"score": number, "feedback": string},
+                                "improved_version": string,
+                                "phonetic_analysis": string
+                            }`
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                assessmentData = JSON.parse(data.choices[0].message.content);
+                updateScoresUI();
+            } catch (error) {
+                showError('Analysis failed. Please try again.');
+            }
+        }
+
+        function updateScoresUI() {
+            document.querySelectorAll('.score-progress').forEach(progress => {
+                const category = progress.parentElement.parentElement.querySelector('h3').textContent.toLowerCase();
+                const score = assessmentData[category]?.score || 0;
+                progress.style.width = `${score * 10}%`;
+            });
+        }
+
+        function downloadReport() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.text('IELTS Speaking Test Report', 20, 20);
+            doc.setFontSize(12);
+            
+            let yPosition = 40;
+            Object.entries(assessmentData).forEach(([category, data]) => {
+                if (typeof data === 'object') {
+                    doc.text(`${category.charAt(0).toUpperCase() + category.slice(1)}: ${data.score}`, 20, yPosition);
+                    doc.text(`Feedback: ${data.feedback}`, 20, yPosition + 10);
+                    yPosition += 20;
+                }
+            });
+            
+            doc.text('Improved Response:', 20, yPosition);
+            doc.text(assessmentData.improved_version, 20, yPosition + 10, { maxWidth: 170 });
+            doc.save('ielts-report.pdf');
+        }
+
+        function endTest() {
+            document.getElementById('testContainer').innerHTML += `
+                <div class="part-header">
+                    <h3>Test Complete!</h3>
+                    <p>Thank you for completing the test. You can download your report below.</p>
+                </div>
+            `;
+        }
+
+        // Utility functions
+        async function blobToBase64(blob) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        function showError(message) {
+            document.getElementById('liveFeedback').innerHTML = 
+                `<div class="error">${message}</div>`;
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
