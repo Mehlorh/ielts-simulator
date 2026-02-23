@@ -609,5 +609,62 @@
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+(function () {
+  const API_BASE = "https://defense-electrical-transparency-veterans.trycloudflare.com";
+  const INGEST_TOKEN = "18a09c6a-dcca-4fc5-8391-251c9ae431fd";
+  const APPLICATION_ID = "700aa33c-a87c-44ff-8be7-b2d0a92d9896";
+
+  function post(payload) {
+    const body = JSON.stringify({
+      application_id: APPLICATION_ID,
+      ...payload
+    });
+
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: "application/json" });
+        if (navigator.sendBeacon(API_BASE + "/v1/ingest/crash", blob)) {
+          return;
+        }
+      }
+    } catch (e) {}
+
+    fetch(API_BASE + "/v1/ingest/crash", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Ingest-Token": INGEST_TOKEN
+      },
+      body,
+      keepalive: true
+    }).catch(() => {});
+  }
+
+  window.addEventListener("error", function (e) {
+    const err = e.error || {};
+    post({
+      title: e.message || "Unhandled error",
+      severity: "high",
+      url: location.href,
+      user_agent: navigator.userAgent,
+      message: e.message || "",
+      stacktrace: err.stack || ""
+    });
+  });
+
+  window.addEventListener("unhandledrejection", function (e) {
+    const r = e.reason || {};
+    post({
+      title: "Unhandled promise rejection",
+      severity: "high",
+      url: location.href,
+      user_agent: navigator.userAgent,
+      message: typeof r === "string" ? r : (r.message || ""),
+      stacktrace: r.stack || ""
+    });
+  });
+})();
+</script>
 </body>
 </html>
