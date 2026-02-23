@@ -666,5 +666,15 @@
           });
         })();
     </script>
+    <button id="crashBtn" style="padding:10px 16px;font-size:16px;">
+      Click to simulate crash
+    </button>
+    
+    <script>
+      document.getElementById("crashBtn").addEventListener("click", function () {
+        const profile = null;
+        profile.name.toUpperCase(); // TypeError
+      });
+    </script>
 </body>
 </html>
