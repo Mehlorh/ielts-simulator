@@ -647,8 +647,11 @@
               title: e.message || "Unhandled error",
               severity: "high",
               url: location.href,
+              script_url: e.filename || "",
               user_agent: navigator.userAgent,
               message: e.message || "",
+              lineno: e.lineno,
+              colno: e.colno,
               stacktrace: err.stack || ""
             });
           });
