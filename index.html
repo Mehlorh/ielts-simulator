@@ -611,60 +611,61 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         (function () {
-          const API_BASE = "https://trout-moms-guides-excess.trycloudflare.com";
-          const INGEST_TOKEN = "18a09c6a-dcca-4fc5-8391-251c9ae431fd";
+          const API_BASE = "https://northwest-allow-terrace-freelance.trycloudflare.com";
           const APPLICATION_ID = "700aa33c-a87c-44ff-8be7-b2d0a92d9896";
+          const INGEST_TOKEN = "18a09c6a-dcca-4fc5-8391-251c9ae431fd";
         
-          function post(payload) {
-            const body = JSON.stringify({
+          function report(eventType, payload) {
+            const body = {
               application_id: APPLICATION_ID,
-              ...payload
-            });
+              ingest_token: INGEST_TOKEN,
+              event_type: eventType,
+              severity: payload.severity || "high",
+              title: payload.title || payload.message || "Browser runtime error",
+              message: payload.message || payload.title || "",
+              stacktrace: payload.stacktrace || "",
+              url: payload.url || window.location.href,
+              script_url: payload.script_url || "",
+              lineno: payload.lineno,
+              colno: payload.colno,
+              user_agent: navigator.userAgent,
+              release: payload.release || ""
+            };
         
-            try {
-              if (navigator.sendBeacon) {
-                const blob = new Blob([body], { type: "application/json" });
-                if (navigator.sendBeacon(API_BASE + "/v1/ingest/crash", blob)) {
-                  return;
-                }
-              }
-            } catch (e) {}
-        
-            fetch(API_BASE + "/v1/ingest/crash", {
+            fetch(API_BASE + "/v1/telemetry/browser", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-Ingest-Token": INGEST_TOKEN
-              },
-              body,
-              keepalive: true
-            }).catch(() => {});
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+              keepalive: true,
+              mode: "cors"
+            }).catch(function () {
+              const qs = new URLSearchParams(
+                Object.entries(body).filter(([_, v]) => v !== undefined && v !== null && v !== "")
+              ).toString();
+              (new Image()).src = API_BASE + "/v1/telemetry/pixel.gif?" + qs;
+            });
           }
         
           window.addEventListener("error", function (e) {
             const err = e.error || {};
-            post({
+            report("runtime_error", {
               title: e.message || "Unhandled error",
-              severity: "high",
-              url: location.href,
-              script_url: e.filename || "",
-              user_agent: navigator.userAgent,
               message: e.message || "",
+              stacktrace: err.stack || "",
+              script_url: e.filename || "",
               lineno: e.lineno,
               colno: e.colno,
-              stacktrace: err.stack || ""
+              severity: "high"
             });
           });
         
           window.addEventListener("unhandledrejection", function (e) {
             const r = e.reason || {};
-            post({
+            report("unhandled_rejection", {
               title: "Unhandled promise rejection",
-              severity: "high",
-              url: location.href,
-              user_agent: navigator.userAgent,
               message: typeof r === "string" ? r : (r.message || ""),
-              stacktrace: r.stack || ""
+              stacktrace: r.stack || "",
+              severity: "high"
             });
           });
         })();
