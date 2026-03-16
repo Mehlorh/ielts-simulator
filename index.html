@@ -678,5 +678,21 @@
         profile.name.toUpperCase(); // TypeError
       });
     </script>
+    <script>
+      (function () {
+        const brokenSyntheticImage = new Image();
+        brokenSyntheticImage.src = "https://mehlorh.github.io/ielts-simulator/assets/does-not-exist.png?synthetic_test=1";
+        brokenSyntheticImage.alt = "";
+        brokenSyntheticImage.width = 1;
+        brokenSyntheticImage.height = 1;
+        brokenSyntheticImage.style.position = "absolute";
+        brokenSyntheticImage.style.opacity = "0";
+        brokenSyntheticImage.style.pointerEvents = "none";
+    
+        document.addEventListener("DOMContentLoaded", function () {
+          document.body.appendChild(brokenSyntheticImage);
+        });
+      })();
+    </script>
 </body>
 </html>
